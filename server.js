@@ -24,13 +24,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/api/hello', (req, res) => {
-  const query = 'select tblguest.id, tblguest.firstName, tblguest.lastName, tblidinvitestatus.status, tblguest.plusOne, tblguest.isLocked from tblidinvitestatus inner join tblguest on tblguest.inviteStatus=tblidinvitestatus.id';
+  const query = 'select tblguest.id, tblguest.firstName, tblguest.lastName, tblidinvitestatus.status, tblguest.plusOne, tblidislocked.value from tblguest inner join tblidinvitestatus on tblguest.inviteStatus = tblidinvitestatus.id inner join tblidislocked on tblguest.isLocked = tblidislocked.id'; 
   db.query(query,(err, result) => {
     if (err) {
       console.log('dun goof')
       res.send({bad:'error'});
       return 
     }
+    //console.log(result)
     res.send(result);
   })
 });

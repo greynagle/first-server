@@ -6,25 +6,37 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import propTypes from 'prop-types'
-import { Input, TextField, Paper } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles'
+import { Input, TextField, Paper, Checkbox, Button } from '@material-ui/core';
 
-const styles = theme => ({
-  paper: {
-    width: '85%',
+// All the material-ui styling
+const useStyles = makeStyles({
+  root: {
+    width: '90%',   
+    margin: 'auto', 
     marginTop: '5%',
+    height: '75%',
     overflow: 'auto',
-  }
-})
+  },
+  button: {
+    width: 50,
+    height: 35,
+    margin: '2%',
+    marginTop: 10
+  },
+});
 
+// Table formatting
 const GuestTable = ({guestList}) => {
-  const classes = styles()
+  //console.log(guestList)
+  const classes = useStyles()
 
   return (
-    <Paper className={classes.paper}>
+    <Paper className={classes.root}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Guests</TableCell>
+            <TableCell>Guest</TableCell>
             <TableCell align="right">First Name</TableCell>
             <TableCell align="right">Last Name</TableCell>
             <TableCell align="right">Status</TableCell>
@@ -42,7 +54,12 @@ const GuestTable = ({guestList}) => {
               <TableCell align="right">{row.lastName}</TableCell>
               <TableCell align="right">{row.status}</TableCell>
               <TableCell align="right">{row.plusOne}</TableCell>
-              <TableCell align="right">{row.isLocked}</TableCell>
+              <TableCell align="right">
+                <Checkbox
+                  checked={row.value}
+                />
+                {/* {row.isLocked} */}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -52,9 +69,30 @@ const GuestTable = ({guestList}) => {
 }
 GuestTable.propTypes = {guestList:propTypes.array.isRequired}
 
+//Submit button
+const SubmitButton = () => {
+  const classes = useStyles()
+
+  return (
+    <React.Fragment>
+      <Button 
+      variant='contained'
+      className={classes.button}
+      type='submit'
+      >
+        Submit
+      </Button>
+    </React.Fragment>
+  )
+}
+
+// Template for text input fields
 const TextInput = (label, input) => {
+  const classes = useStyles()
+  
   return (
     <Input
+      className={classes.textField}
       placeholder={label}
       label={label}
       inputProps={{
@@ -66,6 +104,8 @@ const TextInput = (label, input) => {
 }
 TextInput.propTypes = {}
 
+
+// Main
 class App extends Component {
   state = {
     response: 'Default response',
@@ -77,7 +117,9 @@ class App extends Component {
   
   componentDidMount() {
     this.callApi()
-      .then(guestList => {this.setState({guestList})})
+      .then(guestList => {
+        this.setState({guestList});
+      })
       .catch(err => console.log(err));  
   }
   
@@ -85,7 +127,6 @@ class App extends Component {
     const response = await fetch('/api/hello');
     const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
-    
     return body;
   };
   
@@ -122,13 +163,16 @@ class App extends Component {
               label="First Name"
               name="firstName"
               onChange={this.handleChange}
+              style={{width: 125}}
             />
             <TextField
               label="Last Name"
               name="lastName"
               onChange={this.handleChange}
+              style={{width: 125}}
             />
-            <button type="submit">Submit</button>
+            <SubmitButton/>
+            {/* <button type="submit">Submit</button> */}
           </form>
           <p>{this.state.responseToPost}</p>
         </div>
