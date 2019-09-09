@@ -10,7 +10,8 @@ const db = mysql.createConnection ( {
   host: 'localhost',
   user: 'root',
   password: 'EcwTfna7835',
-  database: 'wedding'
+  database: 'wedding',
+  multipleStatements: true
 });
 db.connect( (err) => {
   if (err) {
@@ -24,7 +25,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/api/hello', (req, res) => {
-  const query = 'select tblguest.id, tblguest.firstName, tblguest.lastName, tblidinvitestatus.status, tblguest.plusOne, tblidislocked.value from tblguest inner join tblidinvitestatus on tblguest.inviteStatus = tblidinvitestatus.id inner join tblidislocked on tblguest.isLocked = tblidislocked.id'; 
+  const query = 'select tblguest.id, tblguest.firstName, tblguest.lastName, tblidinvitestatus.status, tblguest.plusOne, tblidislocked.value from tblguest inner join tblidinvitestatus on tblguest.inviteStatus = tblidinvitestatus.id inner join tblidislocked on tblguest.isLocked = tblidislocked.id; select * from tblidinvitestatus'; 
   db.query(query,(err, result) => {
     if (err) {
       console.log('dun goof')
@@ -38,7 +39,7 @@ app.get('/api/hello', (req, res) => {
 
 app.post('/api/world', ({body}, res) => {
   console.log(body)
-  const query = `insert into tblguest (firstName,lastName,plusOne,isLocked) values ("${body.firstName}","${body.lastName}",1,1)`;
+  const query = `insert into tblguest (firstName,lastName,plusOne,inviteStatus,isLocked) values ("${body.firstName}","${body.lastName}",1,${body.inviteStatus},1)`;
   db.query(query,(err, result) => {
     if (err) {
       console.log('bad')
