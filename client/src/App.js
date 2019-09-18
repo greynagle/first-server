@@ -7,7 +7,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import propTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
-import { Input, TextField, Paper, Checkbox, Button, Select, MenuItem } from '@material-ui/core';
+import { Input, TextField, Paper, Checkbox, Button, Select, MenuItem, InputBase } from '@material-ui/core';
 
 // All the material-ui styling
 const useStyles = makeStyles({
@@ -27,7 +27,7 @@ const useStyles = makeStyles({
 });
 
 // Table formatting
-const GuestTable = ({guestList, firstName, onChangeFirstName, lastName, onChangeLastName, statusDrop, onChangeStatus, status, isLocked, onChangeLock, plusOne, onChangePlusOne}) => {
+const GuestTable = ({guestList, onChangeTable, firstName, onChangeFirstName, lastName, onChangeLastName, statusDrop, onChangeStatus, status, isLocked, onChangeLock, plusOne, onChangePlusOne}) => {
   //console.log(guestList)
   const classes = useStyles()
 
@@ -38,22 +38,45 @@ const GuestTable = ({guestList, firstName, onChangeFirstName, lastName, onChange
         <TableHead>
           <TableRow>
             <TableCell>Guest</TableCell>
-            <TableCell align="center">First Name</TableCell>
-            <TableCell align="center">Last Name</TableCell>
+            <TableCell align="left">First Name</TableCell>
+            <TableCell align="left">Last Name</TableCell>
             <TableCell align="center">Status</TableCell>
             <TableCell align="center">Plus One?</TableCell>
             <TableCell align="center">Locked</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
+          
           {/* table row */}
+          
           {guestList.map(row => (
-            <TableRow key={row.id}>
+            <TableRow 
+            hover={true}
+            key={row.id}
+            >
               <TableCell component="th" scope="row">
                 {row.id}
               </TableCell>
-              <TableCell align="center">{row.firstName}</TableCell>
-              <TableCell align="center">{row.lastName}</TableCell>
+              <TableCell align="right">
+                <InputBase
+                  align="right"
+                  defaultValue={row.firstName}
+                  inputProps={{ 'aria-label':'naked'}}
+                  onChange={onChangeTable}
+                  id={row.id.toString()}
+                  name='firstName'
+                />
+              </TableCell>
+              <TableCell align="right">
+                <InputBase
+                  align="right"
+                  defaultValue={row.lastName}
+                  inputProps={{ 'aria-label':'naked'}}
+                  onChange={onChangeTable}
+                  id={row.id.toString()}
+                  name='lastName'
+                />
+              </TableCell>
               <TableCell align="center">{row.status}</TableCell>
               <TableCell align="center">
                 <Checkbox
@@ -74,12 +97,14 @@ const GuestTable = ({guestList, firstName, onChangeFirstName, lastName, onChange
               </TableCell>
             </TableRow>
           ))}
+          
           {/* input row */}
+          
           <TableRow>
             <TableCell>
               <SubmitButton/>
             </TableCell>
-            <TableCell align="right">
+            <TableCell align="left">
               <TextField
                 label="First Name"
                 name="firstName"
@@ -88,7 +113,7 @@ const GuestTable = ({guestList, firstName, onChangeFirstName, lastName, onChange
                 value={firstName}
               />
             </TableCell>
-            <TableCell align="right">
+            <TableCell align="left">
               <TextField
                 label="Last Name"
                 name="lastName"
@@ -141,7 +166,8 @@ const GuestTable = ({guestList, firstName, onChangeFirstName, lastName, onChange
   ) 
 }
 GuestTable.propTypes = {
-  guestList:propTypes.array.isRequired,
+  guestList: propTypes.array.isRequired,
+  onChangeTable: propTypes.func.isRequired,
   firstName: propTypes.string.isRequired,
   onChangeFirstName: propTypes.func.isRequired,
   lastName: propTypes.string.isRequired,
@@ -216,13 +242,14 @@ class App extends Component {
     plusOne: true,
     responseToPost: '',
     guestList: [],
-    statusDrop: []
+    statusDrop: [],
+    guestListUpdate: {},
   };
   
   componentDidMount() {
     this.callApi()
       .then(body => {
-        console.log(body[1])
+        // console.log(body[1])
         this.setState({guestList:body[0], statusDrop:body[1]});
       })
       .catch(err => console.log(err));  
@@ -283,17 +310,29 @@ class App extends Component {
     })
   }
 
-  handleChange = (e) => {
-    this.setState({[e.target.name]: e.target.value})
+  handleChangeTable = (e) => {
+    e.preventDefault()
+    e.persist()
+    this.setState(prevState => ({
+      guestListUpdate: {
+        ...prevState.guestListUpdate, 
+        [e.target.id]: {
+          ...prevState.guestListUpdate[e.target.id],
+          [e.target.name]: e.target.value
+        }
+      }
+    }))
+    console.log(this.state.guestListUpdate)
   }
   
   render() {
-    console.log(this.state.firstName)
+    // console.log(this.state.guestList)
     return (
       <div>
         <form onSubmit={this.handleSubmit}>          
           <GuestTable 
             guestList={this.state.guestList}
+            onChangeTable={this.handleChangeTable}
             onChangeFirstName={this.handleChangeFirstName}
             firstName={this.state.firstName}
             onChangeLastName={this.handleChangeLastName}
