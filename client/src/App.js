@@ -12,7 +12,7 @@ import { Input, TextField, Paper, Checkbox, Button, Select, MenuItem, InputBase 
 // All the material-ui styling
 const useStyles = makeStyles({
   root: {
-    width: '90%',   
+    width: '85%',   
     margin: 'auto', 
     marginTop: '5%',
     height: '75%',
@@ -57,7 +57,7 @@ const GuestTable = ({guestList, onChangeTable, firstName, onChangeFirstName, las
               <TableCell component="th" scope="row">
                 {row.id}
               </TableCell>
-              <TableCell align="right">
+              <TableCell align="left">
                 <InputBase
                   align="right"
                   defaultValue={row.firstName}
@@ -67,7 +67,7 @@ const GuestTable = ({guestList, onChangeTable, firstName, onChangeFirstName, las
                   name='firstName'
                 />
               </TableCell>
-              <TableCell align="right">
+              <TableCell align="left">
                 <InputBase
                   align="right"
                   defaultValue={row.lastName}
@@ -81,8 +81,9 @@ const GuestTable = ({guestList, onChangeTable, firstName, onChangeFirstName, las
               <TableCell align="center">
                 <Checkbox
                   name='plusOne'
+                  id={row.id.toString()}
                   checked={plusOne}
-                  onClick={onChangePlusOne}
+                  onClick={onChangeTable}
                 />
               </TableCell>
               <TableCell align="right">
@@ -313,15 +314,26 @@ class App extends Component {
   handleChangeTable = (e) => {
     e.preventDefault()
     e.persist()
-    this.setState(prevState => ({
+    this.setState(prevState => (e.target.name ==="plusOne" ? { 
+      plusOne: !prevState.plusOne,
       guestListUpdate: {
         ...prevState.guestListUpdate, 
         [e.target.id]: {
           ...prevState.guestListUpdate[e.target.id],
-          [e.target.name]: e.target.value
+          [e.target.name]: !prevState.plusOne
         }
       }
-    }))
+    }: 
+      {
+        guestListUpdate: {
+          ...prevState.guestListUpdate, 
+          [e.target.id]: {
+            ...prevState.guestListUpdate[e.target.id],
+            [e.target.name]: e.target.value
+          }
+        }
+      }
+    ))
     console.log(this.state.guestListUpdate)
   }
   
