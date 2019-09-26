@@ -82,7 +82,7 @@ const GuestTable = ({guestList, onChangeTable, firstName, onChangeFirstName, las
                 <Checkbox
                   name='plusOne'
                   id={row.id.toString()}
-                  checked={plusOne}
+                  checked={row.plusOne === 1 ? true : false}
                   onClick={onChangeTable}
                 />
               </TableCell>
@@ -314,8 +314,17 @@ class App extends Component {
   handleChangeTable = (e) => {
     e.preventDefault()
     e.persist()
-    this.setState(prevState => (e.target.name ==="plusOne" ? { 
+    let guestListChange = {}
+    if (e.target.name === "plusOne") {
+      guestListChange = this.state.guestList.map(x => {
+        return e.target.id == x.id ? (x.plusOne === 1 ?  {...x, plusOne:2} : {...x, plusOne:1}) : x
+      })
+    }
+    console.log(guestListChange)
+    this.setState(prevState => (e.target.name ==="plusOne" ? 
+    { 
       plusOne: !prevState.plusOne,
+      guestList: guestListChange,
       guestListUpdate: {
         ...prevState.guestListUpdate, 
         [e.target.id]: {
