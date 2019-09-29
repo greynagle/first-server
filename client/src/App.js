@@ -27,7 +27,7 @@ const useStyles = makeStyles({
 });
 
 // Table formatting
-const GuestTable = ({guestList, onChangeTable, firstName, onChangeFirstName, lastName, onChangeLastName, statusDrop, onChangeStatus, status, isLocked, onChangeLock, plusOne, onChangePlusOne}) => {
+const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onChangeFirstName, lastName, onChangeLastName, statusDrop, onChangeStatus, status, isLocked, onChangeLock, plusOne, onChangePlusOne}) => {
   //console.log(guestList)
   const classes = useStyles()
 
@@ -42,7 +42,11 @@ const GuestTable = ({guestList, onChangeTable, firstName, onChangeFirstName, las
             <TableCell align="left">Last Name</TableCell>
             <TableCell align="center">Status</TableCell>
             <TableCell align="center">Plus One?</TableCell>
-            <TableCell align="center">Locked</TableCell>
+            <TableCell align="center">
+              <UpdateButton
+                onSubmit = {onUpdate}
+              />
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -103,7 +107,9 @@ const GuestTable = ({guestList, onChangeTable, firstName, onChangeFirstName, las
           
           <TableRow>
             <TableCell>
-              <SubmitButton/>
+              <SubmitButton
+                onSubmit = {onSub}
+              />
             </TableCell>
             <TableCell align="left">
               <TextField
@@ -168,6 +174,8 @@ const GuestTable = ({guestList, onChangeTable, firstName, onChangeFirstName, las
 }
 GuestTable.propTypes = {
   guestList: propTypes.array.isRequired,
+  onSub: propTypes.func.isRequired,
+  onUpdate: propTypes.func.isRequired,
   onChangeTable: propTypes.func.isRequired,
   firstName: propTypes.string.isRequired,
   onChangeFirstName: propTypes.func.isRequired,
@@ -213,6 +221,23 @@ const SubmitButton = () => {
   )
 }
 
+// Update Button
+const UpdateButton = () => {
+  const classes = useStyles()
+
+  return (
+    <React.Fragment>
+      <Button 
+      variant='contained'
+      className={classes.button}
+      type='submit'
+      >
+        Update
+      </Button>
+    </React.Fragment>
+  )
+}
+
 // Template for text input fields
 const TextInput = (label, input) => {
   const classes = useStyles()
@@ -233,6 +258,7 @@ TextInput.propTypes = {}
 
 
 // Main
+
 class App extends Component {
   state = {
     response: 'Default response',
@@ -281,6 +307,10 @@ class App extends Component {
     this.setState({ responseToPost: body });
   };
 
+  handleUpdate = async e => {
+    // updates
+  }
+
   handleChangeFirstName = (e) => {
     this.setState({
       firstName: e.target.value
@@ -323,7 +353,6 @@ class App extends Component {
     console.log(guestListChange)
     this.setState(prevState => (e.target.name ==="plusOne" ? 
     { 
-      plusOne: !prevState.plusOne,
       guestList: guestListChange,
       guestListUpdate: {
         ...prevState.guestListUpdate, 
@@ -350,9 +379,11 @@ class App extends Component {
     // console.log(this.state.guestList)
     return (
       <div>
-        <form onSubmit={this.handleSubmit}>          
+        <form>          
           <GuestTable 
             guestList={this.state.guestList}
+            onSub = {this.handleSubmit}
+            onUpdate= {this.handleUpdate}
             onChangeTable={this.handleChangeTable}
             onChangeFirstName={this.handleChangeFirstName}
             firstName={this.state.firstName}

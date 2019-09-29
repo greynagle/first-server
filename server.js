@@ -3,13 +3,13 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = 5000;
 
 const db = mysql.createConnection ( {
   port: '3306',
   host: 'localhost',
   user: 'root',
-  password: 'EcwTfna7835',
+  password: 'password',
   database: 'wedding',
   multipleStatements: true
 });
@@ -25,14 +25,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/api/hello', (req, res) => {
-  const query = 'select tblguest.id, tblguest.firstName, tblguest.lastName, tblidinvitestatus.status, tblguest.plusOne, tblidislocked.value from tblguest inner join tblidinvitestatus on tblguest.inviteStatus = tblidinvitestatus.id inner join tblidislocked on tblguest.isLocked = tblidislocked.id; select * from tblidinvitestatus'; 
+  const query = `select id, firstName, lastName, inviteStatus, if(plusOne, 'true','false') plusOne, if(isLocked, 'true','false') isLocked from tblguest`;
   db.query(query,(err, result) => {
     if (err) {
       console.log('dun goof')
       res.send({bad:'error'});
       return 
     }
-    //console.log(result)
+    console.log(result)
     res.send(result);
   })
 });
