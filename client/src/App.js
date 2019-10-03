@@ -40,7 +40,7 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
             <TableCell>Guest</TableCell>
             <TableCell align="left">First Name</TableCell>
             <TableCell align="left">Last Name</TableCell>
-            <TableCell align="center">Status</TableCell>
+            <TableCell align="center">Invited?</TableCell>
             <TableCell align="center">Plus One?</TableCell>
             <TableCell align="center">
               <UpdateButton
@@ -81,12 +81,12 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
                   name='lastName'
                 />
               </TableCell>
-              <TableCell align="center">{row.status}</TableCell>
+              <TableCell align="center">{row.inviteStatus}</TableCell>
               <TableCell align="center">
                 <Checkbox
                   name='plusOne'
                   id={row.id.toString()}
-                  checked={row.plusOne === 1 ? true : false}
+                  checked={row.plusOne}
                   onClick={onChangeTable}
                 />
               </TableCell>
@@ -98,12 +98,11 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
                   checked={isLocked}
                   onClick={onChangeLock}
                 />
-                {/* {row.isLocked} */}
               </TableCell>
             </TableRow>
           ))}
           
-          {/* input row */}
+  {/* input row */}
           
           <TableRow>
             <TableCell>
@@ -132,11 +131,11 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
             <TableCell align="right">
               <Select
                 style={{marginTop: 15}}
-                value={status}
+                value={guestList.inviteStatus}
                 onChange={onChangeStatus}
                 inputProps={{
                   label: 'Status',
-                  name: 'status',
+                  name: 'inviteStatus',
                   id: 'inviteStatus'
                 }}
               >
@@ -145,7 +144,7 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
                     key={row.id}
                     value={row.id}
                   >
-                    {row.status}
+                    {row}
                   </MenuItem>
                 ))}
               </Select>
@@ -269,15 +268,18 @@ class App extends Component {
     plusOne: true,
     responseToPost: '',
     guestList: [],
-    statusDrop: [],
+    statusDrop: ["YES", "NO", "MAYBE"],
     guestListUpdate: {},
   };
   
   componentDidMount() {
     this.callApi()
       .then(body => {
-        // console.log(body[1])
-        this.setState({guestList:body[0], statusDrop:body[1]});
+        console.log(body[1])
+        this.setState({
+          guestList:body, 
+          // statusDrop:body[1]
+        });
       })
       .catch(err => console.log(err));  
   }
