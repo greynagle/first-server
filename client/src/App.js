@@ -268,7 +268,7 @@ class App extends Component {
     plusOne: true,
     responseToPost: '',
     guestList: [],
-    statusDrop: ["YES", "NO", "MAYBE"],
+    statusDrop: ["Yes", "No", "Maybe"],
     guestListUpdate: {},
   };
   
@@ -277,7 +277,7 @@ class App extends Component {
       .then(body => {
         console.log(body[1])
         this.setState({
-          guestList:body, 
+          guestList:body
           // statusDrop:body[1]
         });
       })
@@ -285,7 +285,7 @@ class App extends Component {
   }
   
   callApi = async () => {
-    const response = await fetch('/api/hello');
+    const response = await fetch('/api/load');
     const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
     return body;
@@ -293,7 +293,7 @@ class App extends Component {
   
   handleSubmit = async e => {
     // e.preventDefault();
-    const response = await fetch('/api/world', {
+    const response = await fetch('/api/submit', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -302,6 +302,7 @@ class App extends Component {
         firstName: this.state.firstName, 
         lastName: this.state.lastName,
         inviteStatus: this.state.status,
+        plusOne: this.state.plusOne
       }),
     });
     const body = await response.text();
@@ -310,8 +311,17 @@ class App extends Component {
   };
 
   handleUpdate = async e => {
-    // updates
-  }
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: this.guestListUpdate,
+    });
+    const body = await response.text();
+    
+    this.setState({ responseToPost: body });
+  };
 
   handleChangeFirstName = (e) => {
     this.setState({
@@ -349,7 +359,7 @@ class App extends Component {
     let guestListChange = {}
     if (e.target.name === "plusOne") {
       guestListChange = this.state.guestList.map(x => {
-        return e.target.id == x.id ? (x.plusOne === 1 ?  {...x, plusOne:2} : {...x, plusOne:1}) : x
+        return e.target.id == x.id ? ((x.plusOne == "true" || x.plusOne == true) ?  {...x, plusOne:false} : {...x, plusOne:true}) : x
       })
     }
     console.log(guestListChange)

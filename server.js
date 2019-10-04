@@ -24,7 +24,7 @@ global.db = db;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/api/hello', (req, res) => {
+app.get('/api/load', (req, res) => {
   const query = `select id, firstName, lastName, inviteStatus, if(plusOne, 'true','false') plusOne, if(isLocked, 'true','false') isLocked from tblguest`;
   db.query(query,(err, result) => {
     if (err) {
@@ -37,7 +37,20 @@ app.get('/api/hello', (req, res) => {
   })
 });
 
-app.post('/api/world', ({body}, res) => {
+app.post('/api/submit', ({body}, res) => {
+  console.log(body)
+  const query = `insert into tblguest (firstName,lastName,plusOne,inviteStatus,isLocked) values ("${body.firstName}","${body.lastName}",1,${body.inviteStatus},1)`;
+  db.query(query,(err, result) => {
+    if (err) {
+      console.log('bad')
+      res.send({bad:'error'});
+      return 
+    }
+    res.send({result});
+  })
+});
+
+app.post('/api/update', ({body}, res) => {
   console.log(body)
   const query = `insert into tblguest (firstName,lastName,plusOne,inviteStatus,isLocked) values ("${body.firstName}","${body.lastName}",1,${body.inviteStatus},1)`;
   db.query(query,(err, result) => {
