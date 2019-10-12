@@ -27,7 +27,7 @@ const useStyles = makeStyles({
 });
 
 // Table formatting
-const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onChangeFirstName, lastName, onChangeLastName, statusDrop, onChangeStatus, status, isLocked, onChangeLock, plusOne, onChangePlusOne}) => {
+const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onChangeFirstName, lastName, onChangeLastName, statusDrop, onChangeStatus, inviteStatus, isLocked, onChangeLock, plusOne, onChangePlusOne}) => {
   //console.log(guestList)
   const classes = useStyles()
 
@@ -42,10 +42,8 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
             <TableCell align="left">Last Name</TableCell>
             <TableCell align="center">Invited?</TableCell>
             <TableCell align="center">Plus One?</TableCell>
-            <TableCell align="center">
-              <UpdateButton
-                onSubmit = {onUpdate}
-              />
+            <TableCell align="center" onClick = {onUpdate}>  
+              <UpdateButton/>
             </TableCell>
           </TableRow>
         </TableHead>
@@ -86,17 +84,18 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
                 <Checkbox
                   name='plusOne'
                   id={row.id.toString()}
-                  checked={row.plusOne}
+                  checked={row.plusOne == '1' ? true : false}
                   onClick={onChangeTable}
                 />
               </TableCell>
               <TableCell align="right">
                 <Checkbox
                   name='isLocked'
+                  id={row.id.toString()}
                   icon={<LockIconOpen/>}
                   checkedIcon={<LockIconSolid/>}
-                  checked={isLocked}
-                  onClick={onChangeLock}
+                  checked={row.isLocked}
+                  onClick={onChangeTable}
                 />
               </TableCell>
             </TableRow>
@@ -105,10 +104,8 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
   {/* input row */}
           
           <TableRow>
-            <TableCell>
-              <SubmitButton
-                onSubmit = {onSub}
-              />
+            <TableCell onClick = {onSub}>
+              <SubmitButton/>
             </TableCell>
             <TableCell align="left">
               <TextField
@@ -131,7 +128,7 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
             <TableCell align="right">
               <Select
                 style={{marginTop: 15}}
-                value={guestList.inviteStatus}
+                value={inviteStatus}
                 onChange={onChangeStatus}
                 inputProps={{
                   label: 'Status',
@@ -141,8 +138,8 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
               >
                 {statusDrop.map(row => (
                   <MenuItem 
-                    key={row.id}
-                    value={row.id}
+                    key={row}
+                    value={row}
                   >
                     {row}
                   </MenuItem>
@@ -157,12 +154,8 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
               />
             </TableCell>
             <TableCell align="right">
-              <Checkbox
-                name='isLocked'
-                icon={<LockIconOpen/>}
-                checkedIcon={<LockIconSolid/>}
-                checked={isLocked}
-                onClick={onChangeLock}
+              <CSVButton
+                // onSubmit
               />
             </TableCell>
           </TableRow>
@@ -181,7 +174,7 @@ GuestTable.propTypes = {
   lastName: propTypes.string.isRequired,
   onChangeLastName: propTypes.func.isRequired,
   statusDrop: propTypes.array.isRequired,
-  status: propTypes.number.isRequired,
+  inviteStatus: propTypes.string.isRequired,
   onChangeStatus: propTypes.func.isRequired,
   isLocked: propTypes.bool.isRequired,
   onChangeLock: propTypes.func.isRequired,
@@ -237,6 +230,22 @@ const UpdateButton = () => {
   )
 }
 
+const CSVButton = () => {
+  const classes = useStyles()
+
+  return (
+    <React.Fragment>
+      <Button 
+      variant='contained'
+      className={classes.button}
+      type='submit'
+      >
+        CSV
+      </Button>
+    </React.Fragment>
+  )
+}
+
 // Template for text input fields
 const TextInput = (label, input) => {
   const classes = useStyles()
@@ -263,7 +272,7 @@ class App extends Component {
     response: 'Default response',
     firstName: '',
     lastName: '',
-    status: 1,
+    inviteStatus: 'Yes',
     isLocked: true,
     plusOne: true,
     responseToPost: '',
@@ -275,7 +284,7 @@ class App extends Component {
   componentDidMount() {
     this.callApi()
       .then(body => {
-        console.log(body[1])
+        //console.log(body)
         this.setState({
           guestList:body
           // statusDrop:body[1]
@@ -292,7 +301,7 @@ class App extends Component {
   };
   
   handleSubmit = async e => {
-    // e.preventDefault();
+    console.log("Made it to submit")
     const response = await fetch('/api/submit', {
       method: 'POST',
       headers: {
@@ -301,8 +310,9 @@ class App extends Component {
       body: JSON.stringify({
         firstName: this.state.firstName, 
         lastName: this.state.lastName,
-        inviteStatus: this.state.status,
-        plusOne: this.state.plusOne
+        inviteStatus: this.state.inviteStatus,
+        plusOne: this.state.plusOne,
+        isLocked: this.state.isLocked
       }),
     });
     const body = await response.text();
@@ -311,12 +321,14 @@ class App extends Component {
   };
 
   handleUpdate = async e => {
-    const response = await fetch('/api/upload', {
+    const response = await fetch('/api/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: this.guestListUpdate,
+      body: JSON.stringify({
+        ...this.state.guestListUpdate
+      }),
     });
     const body = await response.text();
     
@@ -337,7 +349,7 @@ class App extends Component {
 
   handleChangeStatus = (e) => {
     this.setState({
-      status: e.target.value
+      inviteStatus: e.target.value
     })
   }
 
@@ -359,21 +371,43 @@ class App extends Component {
     let guestListChange = {}
     if (e.target.name === "plusOne") {
       guestListChange = this.state.guestList.map(x => {
-        return e.target.id == x.id ? ((x.plusOne == "true" || x.plusOne == true) ?  {...x, plusOne:false} : {...x, plusOne:true}) : x
+        return (
+          e.target.id == x.id ? 
+            x.plusOne == '1' ?  
+              {...x, plusOne:'0'} : 
+                x.plusOne == '0' ? 
+                  {...x, plusOne:'1'} : 
+            x : 
+          x
+        )
+      })
+    }
+    if (e.target.name === "isLocked") {
+      guestListChange = this.state.guestList.map(x => {
+        return (
+          e.target.id == x.id ? 
+            x.isLocked == '1' ?  
+              {...x, isLocked:'0'} : 
+                x.isLocked == '0' ? 
+                  {...x, isLocked:'1'} : 
+            x : 
+          x
+        )
       })
     }
     console.log(guestListChange)
-    this.setState(prevState => (e.target.name ==="plusOne" ? 
-    { 
-      guestList: guestListChange,
-      guestListUpdate: {
-        ...prevState.guestListUpdate, 
-        [e.target.id]: {
-          ...prevState.guestListUpdate[e.target.id],
-          [e.target.name]: !prevState.plusOne
+    this.setState(prevState => (
+      (e.target.name === 'plusOne' || e.target.name ==='isLocked') ? 
+      { 
+        guestList: guestListChange,
+        guestListUpdate: {
+          ...prevState.guestListUpdate, 
+          [e.target.id]: {
+            // ...prevState.guestListUpdate[e.target.id],
+            [e.target.name]: e.target.checked == true ? '1' : e.target.checked == false ? '0' : e.target.value
+          }
         }
-      }
-    }: 
+      }: 
       {
         guestListUpdate: {
           ...prevState.guestListUpdate, 
@@ -402,7 +436,7 @@ class App extends Component {
             onChangeLastName={this.handleChangeLastName}
             lastName={this.state.lastName}
             statusDrop={this.state.statusDrop}
-            status={this.state.status}
+            inviteStatus={this.state.inviteStatus}
             onChangeStatus={this.handleChangeStatus}
             isLocked={this.state.isLocked}
             onChangeLock={this.handleChangeLock}
