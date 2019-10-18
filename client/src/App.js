@@ -35,6 +35,9 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
   return (
     <Paper className={classes.root}>
       <Table size='small'>
+        
+        {/* head row */}
+        
         <TableHead>
           <TableRow>
             <TableCell>Guest</TableCell>
@@ -79,7 +82,23 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
                   name='lastName'
                 />
               </TableCell>
-              <TableCell align="center">{row.inviteStatus}</TableCell>
+              <TableCell align="center">
+                <Select
+                  style={{marginTop: 15}}
+                  value={row.inviteStatus}
+                  onChange={onChangeTable}
+                  name='inviteStatus'
+                >
+                  {statusDrop.map(row => (
+                    <MenuItem 
+                      key={row}
+                      value={row}
+                    >
+                      {row}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </TableCell>
               <TableCell align="center">
                 <Checkbox
                   name='plusOne'
@@ -94,14 +113,14 @@ const GuestTable = ({guestList, onSub, onUpdate, onChangeTable, firstName, onCha
                   id={row.id.toString()}
                   icon={<LockIconOpen/>}
                   checkedIcon={<LockIconSolid/>}
-                  checked={row.isLocked}
+                  checked={row.isLocked == '1' ? true : false}
                   onClick={onChangeTable}
                 />
               </TableCell>
             </TableRow>
           ))}
           
-  {/* input row */}
+          {/* input row */}
           
           <TableRow>
             <TableCell onClick = {onSub}>
@@ -395,24 +414,29 @@ class App extends Component {
         )
       })
     }
+    if (e.target.name === "inviteStatus") {
+      guestListChange = this.state.guestList.map(x => {
+        return (
+          e.target.id == x.id ? x.inviteStatus = e.target.value : x
+        )
+      })
+    }
     console.log(guestListChange)
     this.setState(prevState => (
-      (e.target.name === 'plusOne' || e.target.name ==='isLocked') ? 
-      { 
-        guestList: guestListChange,
+      (e.target.name === 'plusOne' || e.target.name ==='isLocked' || e.target.name === 'inviteStatus') ? 
+      {guestList: guestListChange,
         guestListUpdate: {
-          ...prevState.guestListUpdate, 
+        ...prevState.guestListUpdate, 
           [e.target.id]: {
-            // ...prevState.guestListUpdate[e.target.id],
-            [e.target.name]: e.target.checked == true ? '1' : e.target.checked == false ? '0' : e.target.value
+            ...prevState.guestListUpdate[e.target.id],
+            [e.target.name]: e.target.name === 'inviteStatus' ? e.target.value: e.target.checked == true ? '1' : e.target.checked == false ? '0' : e.target.value
           }
         }
       }: 
-      {
-        guestListUpdate: {
-          ...prevState.guestListUpdate, 
+      {guestListUpdate: {
+        ...prevState.guestListUpdate, 
           [e.target.id]: {
-            ...prevState.guestListUpdate[e.target.id],
+          ...prevState.guestListUpdate[e.target.id],
             [e.target.name]: e.target.value
           }
         }
